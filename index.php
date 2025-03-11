@@ -28,13 +28,25 @@ switch ($action) {
         }
         break;
 
-    case "add_assignment":
-        if ($course_id && !empty($description)) {
-            add_assignment($course_id, $description);
-            header("Location: .?action=list_assignments&course_id=" . $course_id);
+    case "edit_course":  // **NEW CASE TO LOAD COURSE DATA**
+        if ($course_id) {
+            $course_name = get_course_name($course_id);
+            if ($course_name === "Unknown Course") {
+                $error = "Course not found.";
+                include("view/error.php");
+                exit();
+            }
+            include('view/edit_course.php');
+        }
+        break;
+
+    case "update_course":  // **NEW CASE TO UPDATE COURSE**
+        if ($course_id && !empty($course_name)) {
+            update_course($course_id, $course_name);
+            header("Location: .?action=list_courses");
             exit();
         } else {
-            $error = "Invalid assignment data. Check all fields and try again.";
+            $error = "Invalid input. Please check your data.";
             include("view/error.php");
             exit();
         }
@@ -54,6 +66,18 @@ switch ($action) {
         }
         break;
 
+    case "add_assignment":
+        if ($course_id && !empty($description)) {
+            add_assignment($course_id, $description);
+            header("Location: .?action=list_assignments&course_id=" . $course_id);
+            exit();
+        } else {
+            $error = "Invalid assignment data. Check all fields and try again.";
+            include("view/error.php");
+            exit();
+        }
+        break;
+
     case "delete_assignment":
         if ($assignment_id) {
             delete_assignment($assignment_id);
@@ -66,8 +90,9 @@ switch ($action) {
         }
         break;
 
-    case "edit_assignment":  // **NEW CASE**
-        if ($assignment_id) {
-            $courses = get_courses();
-            $assignments = get_assignments_by_course(null);
-            $assignment =
+    default:
+        $courses = get_courses();
+        $assignments = get_assignments_by_course($course_id);
+        include('view/assignment_list.php');
+}
+?>
